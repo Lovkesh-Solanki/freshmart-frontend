@@ -1,17 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useContext, useState } from 'react';
-import { ShoppingCart, User, LogOut, Package, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Package, Menu, X, Heart } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
+import { WishlistContext } from '../context/WishlistContext';
 
 function Navbar() {
   const { user, logout, isAuthenticated } = useContext(AuthContext);
   const { getCartCount } = useContext(CartContext);
+  const { getWishlistCount } = useContext(WishlistContext);
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const cartCount = getCartCount();
+  const wishlistCount = getWishlistCount();
 
   const handleLogout = () => {
     logout();
@@ -46,6 +49,18 @@ function Navbar() {
 
             {isAuthenticated && (
               <>
+                {/* Wishlist Button */}
+                <Link to="/wishlist" className="relative group">
+                  <div className="bg-dark-800 border-2 border-white p-3 hover:bg-primary-500 hover:border-primary-500 transition-all transform hover:translate-x-1 hover:translate-y-1">
+                    <Heart size={20} className="text-white" strokeWidth={2.5} />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-accent-500 text-white text-xs font-black rounded-none w-6 h-6 flex items-center justify-center border-2 border-black">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+
                 {/* Cart Button with Badge */}
                 <Link to="/cart" className="relative group">
                   <div className="bg-dark-800 border-2 border-white p-3 hover:bg-primary-500 hover:border-primary-500 transition-all transform hover:translate-x-1 hover:translate-y-1">
@@ -86,6 +101,14 @@ function Navbar() {
                       >
                         <Package size={18} />
                         <span>Orders</span>
+                      </Link>
+                      <Link
+                        to="/wishlist"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-6 py-4 hover:bg-primary-50 border-b-2 border-dark-200 font-semibold"
+                      >
+                        <Heart size={18} />
+                        <span>Wishlist ({wishlistCount})</span>
                       </Link>
                       {user?.role === 'admin' && (
                         <Link
@@ -150,6 +173,13 @@ function Navbar() {
             </Link>
             {isAuthenticated && (
               <>
+                <Link
+                  to="/wishlist"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block px-4 py-3 text-white font-bold hover:bg-dark-800"
+                >
+                  Wishlist ({wishlistCount})
+                </Link>
                 <Link
                   to="/cart"
                   onClick={() => setShowMobileMenu(false)}
