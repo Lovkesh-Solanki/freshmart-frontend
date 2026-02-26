@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { WishlistContext } from '../context/WishlistContext';
 
 function ProductCard({ product, onAddToCart }) {
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-
+  const { isInWishlist, toggleWishlist } = useContext(WishlistContext);
+  
+  const inWishlist = isInWishlist(product._id);
   const finalPrice = product.price - (product.price * product.discount / 100);
 
   const handleAddToCart = async (e) => {
@@ -17,19 +19,32 @@ function ProductCard({ product, onAddToCart }) {
     setIsAdding(false);
   };
 
+  const handleWishlistToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const result = toggleWishlist(product);
+    
+    // Show feedback (optional - can replace with toast)
+    if (result.success) {
+      // You can add a toast notification here if you want
+    }
+  };
+
   return (
     <div className="bg-white border-4 border-black hover:shadow-brutal-lg transition-all group relative">
       {/* Favorite Button */}
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          setIsFavorite(!isFavorite);
-        }}
-        className="absolute top-4 right-4 z-10 bg-white border-2 border-black p-2 hover:bg-primary-500 hover:text-white transition-colors"
+        onClick={handleWishlistToggle}
+        className={`absolute top-4 right-4 z-10 border-2 border-black p-2 transition-all ${
+          inWishlist 
+            ? 'bg-accent-500 text-white' 
+            : 'bg-white text-dark-900 hover:bg-primary-500 hover:text-white'
+        }`}
       >
         <Heart
           size={18}
-          className={isFavorite ? 'fill-current' : ''}
+          className={inWishlist ? 'fill-current' : ''}
           strokeWidth={2.5}
         />
       </button>
