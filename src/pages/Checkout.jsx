@@ -64,6 +64,49 @@ function Checkout() {
     navigate('/cart');
     return null;
   }
+  const handlePlaceOrder = async (e) => {
+  e.preventDefault();
+
+  // Validate all fields
+  if (!street || !city || !state || !zipCode) {
+    alert('Please fill all address fields');
+    return;
+  }
+
+  // Validate cart
+  if (!cart || cart.items.length === 0) {
+    alert('Your cart is empty');
+    navigate('/products');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    const orderData = {
+      deliveryAddress: {
+        street: street.trim(),
+        city: city.trim(),
+        state: state.trim(),
+        zipCode: zipCode.trim()
+      }
+    };
+
+    console.log('Sending order:', orderData); // Debug log
+
+    const response = await API.post('/orders', orderData);
+    
+    // Success
+    await clearCart();
+    navigate(`/orders/${response.data._id}`);
+    
+    } catch (error) {
+      console.error('Order error:', error.response?.data || error);
+      alert(error.response?.data?.message || 'Failed to place order');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-primary-50">
@@ -304,5 +347,6 @@ function Checkout() {
     </div>
   );
 }
+
 
 export default Checkout;
