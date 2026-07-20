@@ -89,7 +89,7 @@ function Wishlist() {
           </div>
           <button
             onClick={handleClearAll}
-            className="bg-white text-dark-900 px-6 py-3 font-black uppercase text-sm border-2 border-dark-900 hover:bg-accent-50 hover:text-accent-600 hover:border-accent-600 transition-all"
+            className="bg-white text-dark-900 px-6 py-3 font-bold uppercase text-sm border-2 border-dark-900 hover:bg-accent-50 hover:text-accent-600 hover:border-accent-600 transition-all"
           >
             Clear All
           </button>
