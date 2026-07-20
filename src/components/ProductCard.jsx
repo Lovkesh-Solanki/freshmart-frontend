@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { useState, useContext } from 'react';
 import { WishlistContext } from '../context/WishlistContext';
+import { NotificationContext } from '../context/NotificationContext';
 
 function ProductCard({ product, onAddToCart }) {
   const [isAdding, setIsAdding] = useState(false);
   const { isInWishlist, toggleWishlist } = useContext(WishlistContext);
+  const { addNotification } = useContext(NotificationContext);
   
   const inWishlist = isInWishlist(product._id);
   const finalPrice = product.price - (product.price * product.discount / 100);
@@ -16,6 +18,7 @@ function ProductCard({ product, onAddToCart }) {
     
     setIsAdding(true);
     await onAddToCart(product._id, 1);
+    addNotification(`${product.name} added to cart!`, 'success', 3000);
     setIsAdding(false);
   };
 
@@ -25,9 +28,13 @@ function ProductCard({ product, onAddToCart }) {
     
     const result = toggleWishlist(product);
     
-    // Show feedback (optional - can replace with toast)
     if (result.success) {
-      // You can add a toast notification here if you want
+      const message = result.message === 'Added to wishlist' 
+        ? `${product.name} added to wishlist!`
+        : `${product.name} removed from wishlist!`;
+      addNotification(message, 'success', 3000);
+    } else {
+      addNotification(result.message, 'info', 3000);
     }
   };
 
