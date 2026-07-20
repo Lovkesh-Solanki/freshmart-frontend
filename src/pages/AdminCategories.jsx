@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Plus, Edit2, Trash2, FolderOpen } from 'lucide-react';
+import { NotificationContext } from '../context/NotificationContext';
 import Navbar from '../components/Navbar';
 import API from '../services/api';
 
@@ -9,6 +10,7 @@ function AdminCategories() {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [editingId, setEditingId] = useState(null);
+  const { addNotification } = useContext(NotificationContext);
 
   useEffect(() => {
     fetchCategories();
@@ -21,6 +23,7 @@ function AdminCategories() {
       setLoading(false);
     } catch (error) {
       console.error('Error:', error);
+      addNotification('Failed to load categories', 'error', 3000);
       setLoading(false);
     }
   };
@@ -30,17 +33,17 @@ function AdminCategories() {
     try {
       if (editingId) {
         await API.put(`/categories/${editingId}`, formData);
-        alert('✓ Category updated!');
+        addNotification('Category updated successfully!', 'success', 3000);
       } else {
         await API.post('/categories', formData);
-        alert('✓ Category created!');
+        addNotification('Category created successfully!', 'success', 3000);
       }
       setFormData({ name: '', description: '' });
       setEditingId(null);
       setShowModal(false);
       fetchCategories();
     } catch (error) {
-      alert('Failed to save category');
+      addNotification('Failed to save category', 'error', 3000);
     }
   };
 
@@ -48,10 +51,10 @@ function AdminCategories() {
     if (window.confirm('Delete this category?')) {
       try {
         await API.delete(`/categories/${id}`);
-        alert('✓ Category deleted!');
+        addNotification('Category deleted successfully!', 'success', 3000);
         fetchCategories();
       } catch (error) {
-        alert('Failed to delete');
+        addNotification('Failed to delete category', 'error', 3000);
       }
     }
   };
@@ -89,37 +92,43 @@ function AdminCategories() {
         </div>
 
         {/* Categories Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {categories.map((category) => (
-            <div key={category._id} className="bg-white border-4 border-black p-6">
-              <div className="w-16 h-16 bg-primary-500 border-2 border-black flex items-center justify-center mb-4">
-                <FolderOpen className="text-white" size={32} strokeWidth={2.5} />
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary-500"></div>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {categories.map((category) => (
+              <div key={category._id} className="bg-white border-4 border-black p-6 hover:shadow-brutal transition-all">
+                <div className="w-16 h-16 bg-primary-500 border-2 border-black flex items-center justify-center mb-4">
+                  <FolderOpen className="text-white" size={32} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-2xl font-black text-dark-900 mb-2">
+                  {category.name}
+                </h3>
+                <p className="text-sm font-semibold text-dark-600 mb-4">
+                  {category.description || 'No description'}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(category)}
+                    className="flex-1 bg-white text-dark-900 py-2 font-bold text-sm border-2 border-dark-900 hover:bg-dark-50 transition-all flex items-center justify-center gap-1"
+                  >
+                    <Edit2 size={14} strokeWidth={2.5} />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category._id)}
+                    className="flex-1 bg-accent-500 text-white py-2 font-bold text-sm border-2 border-black hover:bg-accent-600 transition-all flex items-center justify-center gap-1"
+                  >
+                    <Trash2 size={14} strokeWidth={2.5} />
+                    Delete
+                  </button>
+                </div>
               </div>
-              <h3 className="text-2xl font-black text-dark-900 mb-2">
-                {category.name}
-              </h3>
-              <p className="text-sm font-semibold text-dark-600 mb-4">
-                {category.description || 'No description'}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(category)}
-                  className="flex-1 bg-white text-dark-900 py-2 font-bold text-sm border-2 border-dark-900 hover:bg-dark-50 transition-all flex items-center justify-center gap-1"
-                >
-                  <Edit2 size={14} strokeWidth={2.5} />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(category._id)}
-                  className="flex-1 bg-red-500 text-white py-2 font-bold text-sm border-2 border-black hover:bg-red-600 transition-all flex items-center justify-center gap-1"
-                >
-                  <Trash2 size={14} strokeWidth={2.5} />
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Add/Edit Modal */}
         {showModal && (

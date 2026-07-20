@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
+import { NotificationContext } from '../context/NotificationContext';
 import API from '../services/api';
 import Navbar from '../components/Navbar';
 
@@ -13,9 +14,9 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
 
-  // ✅ Import contexts
   const { addToCart } = useContext(CartContext);
   const { isAuthenticated } = useContext(AuthContext);
+  const { addNotification } = useContext(NotificationContext);
 
   useEffect(() => {
     fetchProduct();
@@ -44,9 +45,7 @@ function ProductDetail() {
     }
   };
 
-  // ✅ Fixed: Actually add to cart using CartContext
   const handleAddToCart = async () => {
-    // Check if user is logged in
     if (!isAuthenticated) {
       if (window.confirm('Please login to add items to cart. Go to login page?')) {
         navigate('/login');
@@ -54,23 +53,20 @@ function ProductDetail() {
       return;
     }
 
-    // Validate quantity
     if (quantity < 1 || quantity > product.stock) {
-      alert(`Please select quantity between 1 and ${product.stock}`);
+      addNotification(`Please select quantity between 1 and ${product.stock}`, 'warning', 3000);
       return;
     }
 
     setAddingToCart(true);
 
-    // Add to cart using CartContext
     const result = await addToCart(product._id, quantity);
 
     if (result.success) {
-      alert(`✓ Added ${quantity} ${product.name} to cart!`);
-      // Optional: Reset quantity after successful add
-      // setQuantity(1);
+      addNotification(`${quantity} ${product.name} added to cart!`, 'success', 3000);
+      setQuantity(1);
     } else {
-      alert(result.message || 'Failed to add to cart');
+      addNotification(result.message || 'Failed to add to cart', 'error', 3000);
     }
 
     setAddingToCart(false);
@@ -78,10 +74,10 @@ function ProductDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-primary-50">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary-500"></div>
         </div>
       </div>
     );
@@ -89,14 +85,14 @@ function ProductDetail() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-primary-50">
         <Navbar />
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h2>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-white border-4 border-black p-12 text-center">
+            <h2 className="text-4xl font-display font-black text-dark-900 mb-4">PRODUCT NOT FOUND</h2>
             <button
               onClick={() => navigate('/products')}
-              className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600"
+              className="bg-primary-500 text-white px-8 py-4 font-black uppercase border-4 border-black shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
             >
               Back to Products
             </button>
@@ -109,82 +105,76 @@ function ProductDetail() {
   const finalPrice = calculateFinalPrice(product.price, product.discount);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-primary-50">
       <Navbar />
 
-      {/* Back Button */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <button
-            onClick={() => navigate('/products')}
-            className="text-green-600 hover:text-green-700 font-semibold"
-          >
-            ← Back to Products
-          </button>
-        </div>
-      </div>
-
-      {/* Product Detail */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/products')}
+          className="mb-6 text-primary-600 hover:text-primary-700 font-bold uppercase text-sm"
+        >
+          ← Back to Products
+        </button>
+
+        {/* Product Detail */}
+        <div className="bg-white border-4 border-black overflow-hidden">
           <div className="grid md:grid-cols-2 gap-8 p-8">
             {/* Product Image */}
-            <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+            <div className="h-96 bg-dark-100 border-4 border-black overflow-hidden flex items-center justify-center">
               {product.image ? (
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-cover rounded-lg"
+                  className="w-full h-full object-contain"
                 />
               ) : (
-                <span className="text-gray-400 text-xl">No Image Available</span>
+                <span className="text-dark-400 text-xl font-bold">No Image Available</span>
               )}
             </div>
 
             {/* Product Info */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                {product.name}
-              </h1>
-
               {/* Category */}
               <div className="mb-4">
-                <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                <span className="inline-block bg-primary-500 text-white px-4 py-2 font-bold uppercase text-xs border-2 border-black">
                   {product.category?.name || 'Uncategorized'}
                 </span>
               </div>
 
+              <h1 className="text-5xl font-display font-black text-dark-900 mb-4">
+                {product.name}
+              </h1>
+
               {/* Description */}
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-dark-600 mb-6 leading-relaxed font-semibold">
                 {product.description}
               </p>
 
               {/* Unit */}
-              <div className="mb-6">
-                <span className="text-gray-700">
-                  Unit: <span className="font-semibold">{product.unit}</span>
-                </span>
+              <div className="mb-6 text-lg font-semibold text-dark-700">
+                Unit: <span className="font-black">{product.unit}</span>
               </div>
 
               {/* Price */}
-              <div className="mb-6">
+              <div className="mb-6 border-4 border-black p-4 bg-primary-50">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-3xl font-bold text-gray-800">
+                  <span className="text-5xl font-black text-dark-900">
                     ₹{finalPrice.toFixed(2)}
                   </span>
                   {product.discount > 0 && (
                     <>
-                      <span className="text-xl text-gray-400 line-through">
+                      <span className="text-2xl text-dark-400 line-through font-bold">
                         ₹{product.price}
                       </span>
-                      <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                      <span className="bg-accent-500 text-white px-4 py-2 font-black border-2 border-black">
                         {product.discount}% OFF
                       </span>
                     </>
                   )}
                 </div>
                 {product.discount > 0 && (
-                  <p className="text-green-600 text-sm">
+                  <p className="text-primary-600 font-bold text-sm">
                     You save ₹{(product.price - finalPrice).toFixed(2)}!
                   </p>
                 )}
@@ -193,41 +183,35 @@ function ProductDetail() {
               {/* Stock Status */}
               <div className="mb-6">
                 {product.stock > 0 ? (
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                    <span className="text-green-600 font-semibold">
-                      In Stock ({product.stock} available)
-                    </span>
-                  </div>
+                  <p className="text-primary-600 font-black uppercase">
+                    ✓ In Stock ({product.stock} available)
+                  </p>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-                    <span className="text-red-600 font-semibold">Out of Stock</span>
-                  </div>
+                  <p className="text-accent-600 font-black uppercase">
+                    ✗ Out of Stock
+                  </p>
                 )}
               </div>
 
               {/* Quantity Selector */}
               {product.stock > 0 && (
                 <div className="mb-6">
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Quantity
-                  </label>
+                  <label className="block text-dark-900 font-black mb-3 uppercase">Quantity</label>
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => handleQuantityChange('decrement')}
                       disabled={quantity <= 1}
-                      className="w-10 h-10 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                      className="w-12 h-12 bg-dark-100 border-2 border-black hover:bg-dark-200 disabled:opacity-50 disabled:cursor-not-allowed font-black text-lg"
                     >
-                      -
+                      −
                     </button>
-                    <span className="text-xl font-semibold w-12 text-center">
+                    <span className="text-4xl font-black w-16 text-center text-dark-900">
                       {quantity}
                     </span>
                     <button
                       onClick={() => handleQuantityChange('increment')}
                       disabled={quantity >= product.stock}
-                      className="w-10 h-10 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                      className="w-12 h-12 bg-dark-100 border-2 border-black hover:bg-dark-200 disabled:opacity-50 disabled:cursor-not-allowed font-black text-lg"
                     >
                       +
                     </button>
@@ -240,14 +224,14 @@ function ProductDetail() {
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="w-full bg-green-500 text-white py-4 rounded-lg text-lg font-semibold hover:bg-green-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full bg-primary-500 text-white py-4 font-black uppercase text-lg tracking-wider border-4 border-black shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {addingToCart ? 'Adding to Cart...' : `Add to Cart - ₹${(finalPrice * quantity).toFixed(2)}`}
                 </button>
               ) : (
                 <button
                   disabled
-                  className="w-full bg-gray-300 text-gray-600 py-4 rounded-lg text-lg font-semibold cursor-not-allowed"
+                  className="w-full bg-dark-200 text-dark-500 py-4 font-black uppercase text-lg border-4 border-black cursor-not-allowed"
                 >
                   Out of Stock
                 </button>

@@ -4,12 +4,14 @@ import { Heart, ShoppingCart, Trash2, ArrowRight } from 'lucide-react';
 import { WishlistContext } from '../context/WishlistContext';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
+import { NotificationContext } from '../context/NotificationContext';
 import Navbar from '../components/Navbar';
 
 function Wishlist() {
   const { wishlist, removeFromWishlist, clearWishlist } = useContext(WishlistContext);
   const { addToCart } = useContext(CartContext);
   const { isAuthenticated } = useContext(AuthContext);
+  const { addNotification } = useContext(NotificationContext);
   const navigate = useNavigate();
 
   const handleAddToCart = async (product) => {
@@ -23,21 +25,21 @@ function Wishlist() {
     const result = await addToCart(product._id, 1);
     
     if (result.success) {
-      alert('✓ Added to cart!');
-      // Optionally remove from wishlist after adding to cart
-      // removeFromWishlist(product._id);
+      addNotification(`${product.name} added to cart!`, 'success', 3000);
     } else {
-      alert(result.message || 'Failed to add to cart');
+      addNotification(result.message || 'Failed to add to cart', 'error', 3000);
     }
   };
 
-  const handleRemove = (productId) => {
+  const handleRemove = (productId, productName) => {
     removeFromWishlist(productId);
+    addNotification(`${productName} removed from wishlist`, 'info', 2000);
   };
 
   const handleClearAll = () => {
     if (window.confirm('Remove all items from wishlist?')) {
       clearWishlist();
+      addNotification('Wishlist cleared!', 'info', 2000);
     }
   };
 
@@ -59,7 +61,7 @@ function Wishlist() {
               Save your favorite products for later!
             </p>
             <Link to="/products">
-              <button className="bg-primary-500 text-white px-8 py-4 font-black uppercase tracking-wider border-4 border-black shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all inline-flex items-center gap-3">
+              <button className="bg-primary-500 text-white px-8 py-4 font-black uppercase tracking-wider border-4 border-black shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center gap-3 mx-auto">
                 Browse Products
                 <ArrowRight size={20} strokeWidth={3} />
               </button>
@@ -87,7 +89,7 @@ function Wishlist() {
           </div>
           <button
             onClick={handleClearAll}
-            className="bg-white text-dark-900 px-6 py-3 font-bold uppercase text-sm border-2 border-dark-900 hover:bg-red-50 hover:text-red-600 hover:border-red-600 transition-all"
+            className="bg-white text-dark-900 px-6 py-3 font-black uppercase text-sm border-2 border-dark-900 hover:bg-accent-50 hover:text-accent-600 hover:border-accent-600 transition-all"
           >
             Clear All
           </button>
@@ -105,8 +107,8 @@ function Wishlist() {
               >
                 {/* Remove Button */}
                 <button
-                  onClick={() => handleRemove(product._id)}
-                  className="absolute top-4 right-4 z-10 bg-white border-2 border-black p-2 hover:bg-red-500 hover:text-white transition-colors"
+                  onClick={() => handleRemove(product._id, product.name)}
+                  className="absolute top-4 right-4 z-10 bg-white border-2 border-black p-2 hover:bg-accent-500 hover:text-white transition-colors"
                 >
                   <Trash2 size={18} strokeWidth={2.5} />
                 </button>
@@ -124,7 +126,7 @@ function Wishlist() {
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-contain hover:scale-110 transition-transform duration-500"
                     />
                   </div>
 

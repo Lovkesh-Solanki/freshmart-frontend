@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
+import { NotificationContext } from '../context/NotificationContext';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import API from '../services/api';
@@ -20,6 +21,7 @@ function Products() {
   
   const { addToCart } = useContext(CartContext);
   const { isAuthenticated } = useContext(AuthContext);
+  const { addNotification } = useContext(NotificationContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,9 +85,10 @@ function Products() {
     const result = await addToCart(productId, quantity);
     
     if (result.success) {
-      alert('✓ Added to cart!');
+      const product = products.find(p => p._id === productId);
+      addNotification(`${product.name} added to cart!`, 'success', 3000);
     } else {
-      alert(result.message || 'Failed to add to cart');
+      addNotification(result.message || 'Failed to add to cart', 'error', 3000);
     }
   };
 
