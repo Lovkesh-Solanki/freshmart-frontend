@@ -62,10 +62,9 @@ function ProductCard({ product, onAddToCart }) {
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
           />
         </div>
-
         {/* Product Info */}
         <div className="p-4">
           <p className="text-xs text-dark-500 uppercase tracking-wider font-bold mb-1">
