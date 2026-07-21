@@ -19,7 +19,7 @@ function NotificationContainer() {
   };
 
   return (
-    <div className="fixed top-22 left-1/2 transform -translate-x-1/2 z-50 space-y-3 pointer-events-none">
+    <div className="fixed top-29 left-1/2 transform -translate-x-1/2 z-50 space-y-3 pointer-events-none">
       {notifications.map((notif) => (
         <div
           key={notif.id}
